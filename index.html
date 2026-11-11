@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#15120f">
+  <title>Lucky Ladder — Slot Machine</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap');
+    :root { color-scheme: dark; --ink:#f5eedc; --muted:#a89e8c; --gold:#f4bd57; --red:#d95c42; --panel:#211d18; --line:#554735; }
+    * { box-sizing:border-box }
+    body { margin:0; min-height:100vh; color:var(--ink); background:radial-gradient(ellipse at 50% 35%, #33281b 0, #1a1713 44%, #11100e 100%); font-family:'DM Sans',sans-serif; display:grid; place-items:center; padding:28px 16px; }
+    .game { width:min(100%,780px); position:relative; }
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; }
+    .brand { display:flex; align-items:baseline; gap:12px; font:800 15px 'DM Sans',sans-serif; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); }
+    .brand span { color:var(--ink); font-weight:500; }
+    .brand small { color:var(--muted); font:500 10px 'DM Mono',monospace; letter-spacing:.09em; }
+    .sound { color:var(--muted); border:1px solid var(--line); background:#211d18; border-radius:99px; padding:8px 13px; cursor:pointer; font:500 12px 'DM Mono',monospace; }
+    .reset { color:var(--muted); border:1px solid var(--line); background:#211d18; border-radius:7px; padding:10px 12px; cursor:pointer; font:500 10px 'DM Mono',monospace; letter-spacing:.08em; }
+    .reset:hover { color:var(--ink); border-color:var(--gold); }
+    .eyebrow { color:var(--gold); font:500 11px 'DM Mono',monospace; letter-spacing:.23em; text-transform:uppercase; text-align:center; }
+    h1 { text-align:center; font:800 clamp(38px,7vw,64px)/1.02 'Playfair Display',serif; margin:10px 0 9px; letter-spacing:-.04em; }
+    .subtitle { text-align:center; color:var(--muted); font-size:14px; margin:0 0 28px; }
+    .machine { border:1px solid #8e6d34; border-radius:20px; padding:24px; background:linear-gradient(145deg,#392d1d,#221b14 60%,#181512); box-shadow:0 26px 70px #0008, inset 0 1px #ffffff14; position:relative; }
+    .machine::before { content:''; position:absolute; inset:7px; border:1px solid #c1954938; border-radius:14px; pointer-events:none; }
+    .machine-top { position:relative; display:flex; justify-content:space-between; align-items:center; padding:0 5px 17px; color:var(--muted); font:11px 'DM Mono',monospace; text-transform:uppercase; letter-spacing:.12em; }
+    .level { color:var(--gold); }
+    .reels { position:relative; display:flex; gap:9px; justify-content:center; min-height:125px; padding:10px 12px; background:#100e0c; border:1px solid #6c542f; border-radius:12px; box-shadow:inset 0 8px 18px #0009,0 1px #fff1; overflow:hidden; }
+    .reel { display:grid; place-items:center; flex:1; max-width:116px; min-width:48px; height:104px; border:1px solid #776038; border-radius:9px; background:linear-gradient(180deg,#eee1c5,#cdbb96); color:#2a2117; font-size:clamp(34px,7vw,54px); text-shadow:0 2px #fff8; box-shadow:inset 0 2px 8px #fff8,inset 0 -7px 12px #795a2833; transition:transform .15s; }
+    .reel.spinning { animation:blur .12s linear infinite; }
+    @keyframes blur { 0%{transform:translateY(-3px);filter:blur(1px)} 50%{transform:translateY(3px);filter:blur(2px)} 100%{transform:translateY(-3px);filter:blur(1px)} }
+    .payline { text-align:center; color:#a89e8c; font:10px 'DM Mono',monospace; letter-spacing:.13em; margin:12px 0 18px; text-transform:uppercase; }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:16px 0 19px; }
+    .stat { text-align:center; background:#171411; border:1px solid #423729; border-radius:10px; padding:12px 8px; }
+    .stat-label { color:var(--muted); text-transform:uppercase; letter-spacing:.12em; font:10px 'DM Mono',monospace; }
+    .stat-value { margin-top:5px; color:var(--ink); font:700 21px 'DM Mono',monospace; }
+    .xp-wrap { margin:0 2px 19px; }
+    .xp-head { display:flex; justify-content:space-between; color:var(--muted); font:10px 'DM Mono',monospace; margin-bottom:7px; text-transform:uppercase; letter-spacing:.1em; }
+    .xp-track { height:7px; background:#100e0c; border-radius:9px; overflow:hidden; border:1px solid #423729; }
+    .xp-fill { height:100%; width:0; background:linear-gradient(90deg,#c98236,#ffd878); box-shadow:0 0 12px #f2b54788; transition:width .4s ease; }
+    .controls { display:flex; gap:10px; justify-content:center; }
+    button { font-family:inherit; }
+    .spin { min-width:190px; border:0; border-radius:9px; padding:14px 24px; color:#25190e; background:linear-gradient(180deg,#ffd779,#e9a943); box-shadow:0 4px 0 #9b6425,0 8px 22px #e9a94333; font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:.12em; cursor:pointer; transition:transform .1s,filter .1s; }
+    .spin:hover { filter:brightness(1.08); transform:translateY(-1px); }
+    .spin:active { transform:translateY(2px); box-shadow:0 2px 0 #9b6425; }
+    .spin:disabled { cursor:wait; opacity:.7; transform:none; }
+    .bet { display:flex; align-items:center; gap:8px; color:var(--muted); font:11px 'DM Mono',monospace; }
+    .bet button { color:var(--ink); background:#211d18; border:1px solid var(--line); border-radius:7px; width:34px; height:42px; cursor:pointer; font-size:18px; }
+    .bet button:disabled { opacity:.4; cursor:not-allowed; }
+    .message { min-height:26px; text-align:center; margin-top:17px; font:500 13px 'DM Mono',monospace; color:var(--gold); }
+    .message.win { color:#a9df9c; }
+    .message.levelup { color:#ffd779; animation:pop .35s ease-out; }
+    @keyframes pop { 50%{transform:scale(1.06)} }
+    .paytable { margin:18px auto 0; max-width:510px; display:flex; justify-content:center; flex-wrap:wrap; gap:8px 18px; color:#9d9384; font:10px 'DM Mono',monospace; }
+    .paytable b { color:#e7c17c; font-weight:500; }
+    footer { text-align:center; margin-top:20px; color:#736a5e; font-size:11px; }
+    @media(max-width:520px) { .machine{padding:18px 14px}.reels{gap:5px;padding:8px 6px}.reel{height:82px;min-width:36px}.machine-top{font-size:9px}.stats{gap:6px}.stat{padding:10px 4px}.stat-value{font-size:18px}.controls{gap:7px}.spin{min-width:0;flex:1;padding:13px 12px;font-size:12px}.bet{gap:5px}.bet button{width:31px;height:40px}.paytable{gap:8px 12px} }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important} }
+  </style>
+</head>
+<body>
+  <main class="game">
+    <header><div class="brand">Lucky <span>Ladder</span><small>Cabrillo College</small></div><button class="sound" id="sound" aria-pressed="false">♪ SOUND OFF</button></header>
+    <div class="eyebrow">A little luck goes a long way</div>
+    <h1>Spin your way up.</h1>
+    <p class="subtitle">Every level adds another reel. How far can your luck take you?</p>
+    <section class="machine" aria-label="Slot machine game">
+      <div class="machine-top"><span class="level" id="levelLabel">LEVEL 1</span><span id="reelLabel">3 REELS</span><span id="jackpotLabel">✦ JACKPOT ×20</span></div>
+      <div class="reels" id="reels" aria-live="polite"></div>
+      <div class="payline">— match symbols anywhere to win —</div>
+      <div class="stats">
+        <div class="stat"><div class="stat-label">Credits</div><div class="stat-value" id="credits">100</div></div>
+        <div class="stat"><div class="stat-label">Total won</div><div class="stat-value" id="totalWon">0</div></div>
+        <div class="stat"><div class="stat-label">Next level</div><div class="stat-value" id="nextLevel">250 XP</div></div>
+      </div>
+      <div class="xp-wrap"><div class="xp-head"><span>Level <span id="xpLevel">1</span> progress</span><span id="xpText">0 / 250 XP</span></div><div class="xp-track"><div class="xp-fill" id="xpFill"></div></div></div>
+      <div class="controls">
+        <div class="bet"><button id="betDown" aria-label="Decrease bet">−</button><span>BET <b id="betAmount">5</b></span><button id="betUp" aria-label="Increase bet">+</button></div>
+        <button class="spin" id="spin">SPIN · 5</button>
+        <button class="reset" id="reset">RESET</button>
+      </div>
+      <div class="message" id="message" role="status">Ready when you are. Good luck!</div>
+    </section>
+    <div class="paytable"><span>🍒 Cherry <b>×2</b></span><span>🍋 Lemon <b>×3</b></span><span>🍇 Grape <b>×4</b></span><span>🔔 Bell <b>×6</b></span><span>💎 Gem <b>×10</b></span><span>7️⃣ Seven <b>×20</b></span></div>
+    <footer>Just for fun · No real money, just good vibes</footer>
+  </main>
+  <script>
+    (() => {
+      const symbols = [
+        { icon:'🍒', name:'Cherry', weight:30, pay:2 },
+        { icon:'🍋', name:'Lemon', weight:25, pay:3 },
+        { icon:'🍇', name:'Grape', weight:20, pay:4 },
+        { icon:'🔔', name:'Bell', weight:13, pay:6 },
+        { icon:'💎', name:'Gem', weight:8, pay:10 },
+        { icon:'7️⃣', name:'Seven', weight:4, pay:20 }
+      ];
+      const saved = (() => { try { return JSON.parse(localStorage.getItem('luckyLadderSave') || 'null'); } catch { return null; } })();
+      let state = { level: saved?.level || 1, xp: saved?.xp || 0, credits: saved?.credits ?? 100, bet: saved?.bet || 5, totalWon: saved?.totalWon || 0, sound: false, spinning: false };
+      let audio;
+      const $ = id => document.getElementById(id);
+      const reelCount = () => Math.min(3 + state.level - 1, 10);
+      const xpNeeded = () => 250 + (state.level - 1) * 100;
+      const save = () => localStorage.setItem('luckyLadderSave', JSON.stringify({ level:state.level, xp:state.xp, credits:state.credits, bet:state.bet, totalWon:state.totalWon }));
+      function render() {
+        const box = $('reels');
+        while (box.children.length < reelCount()) {
+          const reel = document.createElement('div');
+          reel.className = 'reel';
+          reel.textContent = symbols[Math.floor(Math.random() * symbols.length)].icon;
+          reel.setAttribute('aria-label', `Reel ${box.children.length + 1}`);
+          box.append(reel);
+        }
+        while (box.children.length > reelCount()) box.lastElementChild.remove();
+        $('levelLabel').textContent = `LEVEL ${state.level}`;
+        $('reelLabel').textContent = `${reelCount()} REEL${reelCount() === 1 ? '' : 'S'}`;
+        $('jackpotLabel').textContent = `✦ JACKPOT ×${symbols.at(-1).pay}`;
+        $('credits').textContent = state.credits.toLocaleString();
+        $('totalWon').textContent = state.totalWon.toLocaleString();
+        $('betAmount').textContent = state.bet;
+        $('spin').textContent = state.spinning ? 'SPINNING…' : `SPIN · ${state.bet}`;
+        $('spin').disabled = state.spinning || state.credits < state.bet;
+        $('betDown').disabled = state.spinning || state.bet <= 1;
+        $('betUp').disabled = state.spinning || state.bet >= Math.min(50, state.credits || 1);
+        $('xpLevel').textContent = state.level;
+        $('nextLevel').textContent = `${xpNeeded()} XP`;
+        $('xpText').textContent = `${state.xp} / ${xpNeeded()} XP`;
+        $('xpFill').style.width = `${Math.min(100, state.xp / xpNeeded() * 100)}%`;
+      }
+      function makeReels(values) {
+        const box = $('reels'); box.replaceChildren();
+        for (let i = 0; i < reelCount(); i++) {
+          const reel = document.createElement('div'); reel.className = 'reel'; reel.textContent = values?.[i] ?? symbols[Math.floor(Math.random() * symbols.length)].icon; reel.setAttribute('aria-label', `Reel ${i + 1}`); box.append(reel);
+        }
+      }
+      function playTone(freq=440, duration=.12) {
+        if (!state.sound) return;
+        try { audio ||= new (window.AudioContext || window.webkitAudioContext)(); const osc=audio.createOscillator(), gain=audio.createGain(); osc.frequency.value=freq; osc.type='sine'; gain.gain.setValueAtTime(.07,audio.currentTime); gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration); osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(audio.currentTime+duration); } catch {}
+      }
+      function pick() { let n=Math.random()*symbols.reduce((s,x)=>s+x.weight,0); return symbols.find(x => (n-=x.weight) < 0) || symbols[0]; }
+      async function spin() {
+        if (state.spinning || state.credits < state.bet) return;
+        state.spinning = true; state.credits -= state.bet; render();
+        const nodes = [...$('reels').children]; nodes.forEach(n => n.classList.add('spinning'));
+        const results = Array.from({length:reelCount()}, pick);
+        const start=Date.now();
+        await new Promise(resolve => { const timer=setInterval(() => { nodes.forEach((n,i) => { if (Date.now()-start < 650+i*210) n.textContent=pick().icon; else { n.textContent=results[i].icon; n.classList.remove('spinning'); playTone(300+i*70,.07); } }); if(nodes.every(n=>!n.classList.contains('spinning'))) {clearInterval(timer);resolve();}},75); });
+        const counts = new Map(); results.forEach(x=>counts.set(x.name,(counts.get(x.name)||0)+1));
+        const best = [...counts.entries()].sort((a,b)=>b[1]-a[1])[0];
+        const count = best?.[1] || 0, symbol = symbols.find(x=>x.name===best?.[0]);
+        // Matching 2 symbols starts a small win; 3 or more multiplies by the matching count.
+        let payout = count >= 2 ? Math.round(state.bet * symbol.pay * (count - 1)) : 0;
+        let message = payout ? `${count} ${symbol.name}${count>1?'s':''} — +${payout} credits!` : 'No match this time. The next spin could be yours.';
+        const msg=$('message'); msg.className=`message${payout?' win':''}`;
+        if (payout) { state.credits += payout; state.totalWon += payout; msg.textContent=message; playTone(symbol.pay===20?880:660,.28); }
+        state.xp += 25;
+        let leveled = false;
+        while (state.xp >= xpNeeded()) { state.xp -= xpNeeded(); state.level += 1; leveled = true; }
+        if (leveled) { msg.className='message levelup'; msg.textContent=`LEVEL UP! You now have ${reelCount()} reels!`; playTone(990,.4); }
+        state.spinning = false;
+        if (state.credits <= 0) {
+          resetGame();
+          $('message').textContent = 'Out of credits — game reset. Good luck!';
+          return;
+        }
+        render(); save();
+      }
+      $('spin').addEventListener('click', spin);
+      $('betDown').addEventListener('click',()=>{state.bet=Math.max(1,state.bet-1);render();save();});
+      $('betUp').addEventListener('click',()=>{state.bet=Math.min(50,state.credits,state.bet+1);render();save();});
+      $('reset').addEventListener('click', resetGame);
+      $('sound').addEventListener('click',()=>{state.sound=!state.sound;$('sound').textContent=state.sound?'♫ SOUND ON':'♪ SOUND OFF';$('sound').setAttribute('aria-pressed',String(state.sound));playTone(520);});
+      function resetGame() {
+        if (state.spinning) return;
+        state.level = 1; state.xp = 0; state.credits = 100; state.bet = 5; state.totalWon = 0;
+        $('message').className = 'message';
+        $('message').textContent = 'Fresh start! Good luck!';
+        makeReels(); render(); save();
+      }
+      makeReels(); render();
+    })();
+  </script>
+</body>
+</html>
+
