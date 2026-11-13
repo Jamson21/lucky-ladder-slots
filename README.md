@@ -10,7 +10,7 @@ Open `index.html` in a modern browser. No install or build step is needed.
 
 - Each spin costs the selected bet and awards 25 XP.
 - Match two or more of the same symbol anywhere across the reels to win.
-- Each 💀 Skull that lands deducts 10 credits. Multiple Skulls stack.
+- Each 💀 Skull that lands deducts 5 credits. Multiple Skulls stack. Skulls appear on about 15% of reels.
 - The first level requires 250 XP; each later level takes 100 more XP than the previous one.
 - Every level adds one reel, up to ten reels.
 - This is a just-for-fun game with no real money or prizes.
