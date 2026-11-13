@@ -81,7 +81,7 @@
       </div>
       <div class="message" id="message" role="status">Ready when you are. Good luck!</div>
     </section>
-    <div class="paytable"><span>🍒 Cherry <b>×2</b></span><span>🍋 Lemon <b>×3</b></span><span>🍇 Grape <b>×4</b></span><span>🔔 Bell <b>×6</b></span><span>💎 Gem <b>×10</b></span><span>7️⃣ Seven <b>×20</b></span><span>💀 Skull <b>−10 each</b></span></div>
+    <div class="paytable"><span>🍒 Cherry <b>×2</b></span><span>🍋 Lemon <b>×3</b></span><span>🍇 Grape <b>×4</b></span><span>🔔 Bell <b>×6</b></span><span>💎 Gem <b>×10</b></span><span>7️⃣ Seven <b>×20</b></span><span>💀 Skull <b>−5 each</b></span></div>
     <footer>Just for fun · No real money, just good vibes</footer>
   </main>
   <script>
@@ -92,7 +92,7 @@
         { icon:'🍇', name:'Grape', weight:20, pay:4 },
         { icon:'🔔', name:'Bell', weight:13, pay:6 },
         { icon:'💎', name:'Gem', weight:8, pay:10 },
-        { icon:'💀', name:'Skull', weight:5, penalty:10 },
+        { icon:'💀', name:'Skull', weight:15, penalty:5 },
         { icon:'7️⃣', name:'Seven', weight:4, pay:20 }
       ];
       const saved = (() => { try { return JSON.parse(localStorage.getItem('luckyLadderSave') || 'null'); } catch { return null; } })();
@@ -146,7 +146,7 @@
         const start=Date.now();
         await new Promise(resolve => { const timer=setInterval(() => { nodes.forEach((n,i) => { if (Date.now()-start < 650+i*210) n.textContent=pick().icon; else { n.textContent=results[i].icon; n.classList.remove('spinning'); playTone(300+i*70,.07); } }); if(nodes.every(n=>!n.classList.contains('spinning'))) {clearInterval(timer);resolve();}},75); });
         const skullCount = results.filter(x=>x.penalty).length;
-        const penalty = skullCount * 10;
+        const penalty = skullCount * 5;
         if (penalty) state.credits = Math.max(0, state.credits - penalty);
         const counts = new Map(); results.filter(x=>!x.penalty).forEach(x=>counts.set(x.name,(counts.get(x.name)||0)+1));
         const best = [...counts.entries()].sort((a,b)=>b[1]-a[1])[0];
